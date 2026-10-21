@@ -99,11 +99,11 @@ Optional AI drafting uses a server-only provider boundary. Configure `AI_API_KEY
 
 ## New Render deployment
 
-[`render.yaml`](render.yaml) provisions a separate Node web service and PostgreSQL database in Singapore, both on the free preview plan. It does not reuse another application's database. Render generates the authentication secret and supplies the internal database connection; no credentials are stored in this repository. The application uses `RENDER_EXTERNAL_URL` as its auth URL automatically. For a custom domain, set `BETTER_AUTH_URL` explicitly.
+[`render.yaml`](render.yaml) defines one new free Node web service in Singapore. Supply your external PostgreSQL `DATABASE_URL` during initial Blueprint setup; this configuration creates no Render database. Render generates the authentication secret, and the application uses `RENDER_EXTERNAL_URL` as its auth URL automatically. For a custom domain, set `BETTER_AUTH_URL` explicitly.
 
-Connect this repository in Render → New → Blueprint, review the two new resource names, and deploy. The build installs locked dependencies, generates the PostgreSQL Prisma client, and builds Next.js. Startup applies the PostgreSQL migrations, seeds only reference categories, then listens on `0.0.0.0` using Render's `PORT`. `/api/health` returns 200 only when the database responds and never reveals connection details.
+Connect this repository in Render → New → Blueprint, provide the database URL, review the new resource name, and deploy. The build installs locked dependencies, generates the PostgreSQL Prisma client, and builds Next.js. Startup applies PostgreSQL migrations, seeds only reference categories, then listens on `0.0.0.0` using Render's `PORT`. `/api/health` returns 200 only when the database responds and never reveals connection details.
 
-Free web services sleep after 15 minutes without traffic; free PostgreSQL expires after 30 days and has no backups. Only one free PostgreSQL database is allowed per workspace. Upgrade or export the database before expiry if you intend to keep accounts and submissions. Do not select a paid plan without reviewing its cost. See [Render's free-plan limits](https://render.com/docs/free).
+Use a separate empty database for ReSolv, with the TLS parameters required by your provider. You can supply the connection locally through the ignored `.env.render.local` file for deployment through the Render connector. Free web services sleep after 15 minutes without traffic; database persistence and limits depend on your external provider. See [Render's free-plan limits](https://render.com/docs/free).
 
 ## Current limits
 

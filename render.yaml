@@ -1,4 +1,4 @@
-# A separate free preview deployment. Free Postgres expires after 30 days.
+# A separate free web service with an externally supplied PostgreSQL database.
 services:
   - type: web
     name: resolv-platform-20261021
@@ -11,18 +11,8 @@ services:
     autoDeployTrigger: commit
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: resolv-postgres-20261021
-          property: connectionString
+        sync: false
       - key: BETTER_AUTH_SECRET
         generateValue: true
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
-
-databases:
-  - name: resolv-postgres-20261021
-    plan: free
-    region: singapore
-    databaseName: resolv
-    user: resolv
-    ipAllowList: []
