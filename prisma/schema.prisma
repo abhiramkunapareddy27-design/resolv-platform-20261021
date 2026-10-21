@@ -1,0 +1,355 @@
+generator client {
+ provider = "prisma-client"
+ output = "../generated/prisma"
+}
+datasource db {
+ provider = "sqlite"
+}
+model User {
+ id String @id
+ name String
+ email String @unique
+ emailVerified Boolean @default(false)
+ image String?
+ role String @default("STUDENT")
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ sessions Session[]
+ accounts Account[]
+ profile Profile?
+ problems Problem[]
+ applications Application[]
+ saves SavedProblem[]
+ memberships OrganizationMembership[]
+ teamMemberships TeamMembership[]
+ registrations Registration[]
+ submissions Submission[]
+ achievements Achievement[]
+ notifications Notification[]
+ reports Report[]
+ audits AuditLog[]
+ scores Score[]
+ invitations Invitation[]
+}
+model Session {
+ id String @id
+ token String @unique
+ expiresAt DateTime
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ ipAddress String?
+ userAgent String?
+ userId String
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ @@index([userId])
+}
+model Account {
+ id String @id
+ accountId String
+ providerId String
+ userId String
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ accessToken String?
+ refreshToken String?
+ idToken String?
+ accessTokenExpiresAt DateTime?
+ refreshTokenExpiresAt DateTime?
+ scope String?
+ password String?
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([userId])
+}
+model Verification {
+ id String @id
+ identifier String
+ value String
+ expiresAt DateTime
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([identifier])
+}
+model Profile {
+ id String @id @default(cuid())
+ userId String @unique
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ bio String @default("")
+ skills String @default("")
+ interests String @default("")
+ experience String @default("Beginner")
+ availability String @default("Open to opportunities")
+ github String @default("")
+ linkedin String @default("")
+ website String @default("")
+ portfolio Portfolio?
+}
+model Portfolio {
+ id String @id @default(cuid())
+ profileId String @unique
+ profile Profile @relation(fields:[profileId],references:[id],onDelete:Cascade)
+ projects PortfolioProject[]
+}
+model PortfolioProject {
+ id String @id @default(cuid())
+ portfolioId String
+ portfolio Portfolio @relation(fields:[portfolioId],references:[id],onDelete:Cascade)
+ title String
+ url String
+ description String
+ provenance String @default("SELF_REPORTED")
+}
+model Skill {
+ id String @id @default(cuid())
+ name String @unique
+ problems ProblemSkill[]
+}
+model ProblemSkill {
+ problemId String
+ skillId String
+ problem Problem @relation(fields:[problemId],references:[id],onDelete:Cascade)
+ skill Skill @relation(fields:[skillId],references:[id])
+ @@id([problemId,skillId])
+}
+model Category {
+ id String @id @default(cuid())
+ name String @unique
+ problems Problem[]
+}
+model EngagementModel {
+ id String @id @default(cuid())
+ name String @unique
+ problems Problem[]
+}
+model Organization {
+ id String @id @default(cuid())
+ name String
+ description String @default("")
+ verification String @default("UNVERIFIED")
+ members OrganizationMembership[]
+ problems Problem[]
+}
+model OrganizationMembership {
+ userId String
+ organizationId String
+ role String @default("MEMBER")
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ organization Organization @relation(fields:[organizationId],references:[id],onDelete:Cascade)
+ @@id([userId,organizationId])
+}
+model Problem {
+ id String @id @default(cuid())
+ title String
+ brief String
+ deliverables String
+ evaluation String
+ ownerId String
+ owner User @relation(fields:[ownerId],references:[id])
+ organizationId String?
+ organization Organization? @relation(fields:[organizationId],references:[id])
+ categoryId String
+ category Category @relation(fields:[categoryId],references:[id])
+ engagementId String
+ engagement EngagementModel @relation(fields:[engagementId],references:[id])
+ difficulty String @default("Intermediate")
+ reward String @default("Unpaid collaboration")
+ deadline DateTime
+ status String @default("DRAFT")
+ commercialUse Boolean @default(false)
+ ipTerms String @default("Creators retain ownership. Any commercial license requires a separate written agreement.")
+ isExample Boolean @default(false)
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ skills ProblemSkill[]
+ applications Application[]
+ saves SavedProblem[]
+ hackathon Hackathon?
+ contracts Contract[]
+ reports Report[]
+ @@index([status,deadline])
+ @@index([ownerId])
+}
+model SavedProblem {
+ userId String
+ problemId String
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ problem Problem @relation(fields:[problemId],references:[id],onDelete:Cascade)
+ @@id([userId,problemId])
+}
+model Application {
+ id String @id @default(cuid())
+ userId String
+ problemId String
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ problem Problem @relation(fields:[problemId],references:[id],onDelete:Cascade)
+ proposal String
+ estimate String @default("")
+ status String @default("PENDING")
+ createdAt DateTime @default(now())
+ contract Contract?
+ @@unique([userId,problemId])
+}
+model Team {
+ id String @id @default(cuid())
+ name String
+ description String
+ skills String
+ createdAt DateTime @default(now())
+ members TeamMembership[]
+ invitations Invitation[]
+ submissions Submission[]
+}
+model TeamMembership {
+ userId String
+ teamId String
+ role String @default("MEMBER")
+ status String @default("REQUESTED")
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ team Team @relation(fields:[teamId],references:[id],onDelete:Cascade)
+ @@id([userId,teamId])
+}
+model Invitation {
+ id String @id @default(cuid())
+ teamId String
+ userId String
+ team Team @relation(fields:[teamId],references:[id],onDelete:Cascade)
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ status String @default("PENDING")
+ @@unique([teamId,userId])
+}
+model Hackathon {
+ id String @id @default(cuid())
+ problemId String @unique
+ problem Problem @relation(fields:[problemId],references:[id],onDelete:Cascade)
+ rules String
+ eligibility String
+ resultsPublished Boolean @default(false)
+ registrations Registration[]
+ submissions Submission[]
+ criteria JudgingCriterion[]
+ results Result[]
+}
+model Registration {
+ userId String
+ hackathonId String
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ hackathon Hackathon @relation(fields:[hackathonId],references:[id],onDelete:Cascade)
+ createdAt DateTime @default(now())
+ @@id([userId,hackathonId])
+}
+model Submission {
+ id String @id @default(cuid())
+ userId String
+ hackathonId String
+ teamId String?
+ user User @relation(fields:[userId],references:[id])
+ hackathon Hackathon @relation(fields:[hackathonId],references:[id],onDelete:Cascade)
+ team Team? @relation(fields:[teamId],references:[id])
+ title String
+ description String
+ github String
+ demo String
+ createdAt DateTime @default(now())
+ scores Score[]
+ result Result?
+ @@unique([userId,hackathonId])
+}
+model JudgingCriterion {
+ id String @id @default(cuid())
+ hackathonId String
+ hackathon Hackathon @relation(fields:[hackathonId],references:[id],onDelete:Cascade)
+ name String
+ maxScore Int @default(10)
+ scores Score[]
+}
+model Score {
+ id String @id @default(cuid())
+ criterionId String
+ submissionId String
+ judgeId String
+ value Int
+ criterion JudgingCriterion @relation(fields:[criterionId],references:[id])
+ submission Submission @relation(fields:[submissionId],references:[id],onDelete:Cascade)
+ judge User @relation(fields:[judgeId],references:[id])
+ @@unique([criterionId,submissionId,judgeId])
+}
+model Result {
+ id String @id @default(cuid())
+ hackathonId String
+ submissionId String @unique
+ rank Int
+ hackathon Hackathon @relation(fields:[hackathonId],references:[id])
+ submission Submission @relation(fields:[submissionId],references:[id])
+ @@unique([hackathonId,rank])
+}
+model Contract {
+ id String @id @default(cuid())
+ problemId String
+ applicationId String @unique
+ problem Problem @relation(fields:[problemId],references:[id])
+ application Application @relation(fields:[applicationId],references:[id])
+ status String @default("PROPOSED")
+ milestones Milestone[]
+ payments PaymentRecord[]
+}
+model Milestone {
+ id String @id @default(cuid())
+ contractId String
+ contract Contract @relation(fields:[contractId],references:[id],onDelete:Cascade)
+ title String
+ amount Int @default(0)
+ status String @default("PENDING")
+ deliverables Deliverable[]
+}
+model Deliverable {
+ id String @id @default(cuid())
+ milestoneId String
+ milestone Milestone @relation(fields:[milestoneId],references:[id],onDelete:Cascade)
+ url String
+ notes String
+ createdAt DateTime @default(now())
+}
+model Achievement {
+ id String @id @default(cuid())
+ userId String
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ title String
+ provenance String @default("SELF_REPORTED")
+ evidenceUrl String
+ createdAt DateTime @default(now())
+}
+model Notification {
+ id String @id @default(cuid())
+ userId String
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ message String
+ read Boolean @default(false)
+ createdAt DateTime @default(now())
+}
+model Report {
+ id String @id @default(cuid())
+ userId String
+ problemId String
+ user User @relation(fields:[userId],references:[id])
+ problem Problem @relation(fields:[problemId],references:[id])
+ reason String
+ status String @default("OPEN")
+ createdAt DateTime @default(now())
+}
+model AuditLog {
+ id String @id @default(cuid())
+ userId String
+ user User @relation(fields:[userId],references:[id])
+ action String
+ entityId String
+ createdAt DateTime @default(now())
+ @@index([userId,createdAt])
+}
+model PaymentRecord {
+ id String @id @default(cuid())
+ contractId String
+ contract Contract @relation(fields:[contractId],references:[id])
+ providerReference String? @unique
+ amount Int
+ currency String @default("INR")
+ status String @default("UNCONFIGURED")
+}

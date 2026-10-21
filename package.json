@@ -1,0 +1,58 @@
+{
+  "name": "resolv",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1",
+    "start:render": "npm run db:deploy && npm run db:seed && next start --hostname 0.0.0.0",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "node --import tsx prisma/seed.ts",
+    "format": "prettier --write src tests docs prisma/*.ts *.ts *.mjs README.md",
+    "setup": "node scripts/setup.mjs",
+    "db:deploy": "prisma migrate deploy",
+    "check": "npm run typecheck && npm run lint && npm run build && npm test",
+    "admin:grant": "node --import tsx scripts/provision-admin.mts",
+    "preview:examples": "node --import tsx scripts/preview-fixtures.mts"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@fontsource/instrument-serif": "5.3.0",
+    "@fontsource/manrope": "5.3.0",
+    "@libsql/client": "0.18.0",
+    "@prisma/adapter-libsql": "7.10.1",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "animejs": "4.5.0",
+    "better-auth": "1.7.12",
+    "dotenv": "18.0.8",
+    "lucide-react": "1.61.0",
+    "motion": "14.5.0",
+    "next": "16.4.2",
+    "pg": "8.23.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "three": "0.186.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/three": "0.186.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.2",
+    "prettier": "3.9.10",
+    "prisma": "7.10.1",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
